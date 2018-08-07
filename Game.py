@@ -39,7 +39,6 @@ class Game(global_param.Global):
         # Load an existing board
         else:
             self.load_board()
-        print(self.board)
         # Setup board
         self.place_player()
         print('\n'+35*'#'+'\n')
@@ -55,16 +54,18 @@ class Game(global_param.Global):
         self.update_player_position(move)
         self.place_start_finish()
         self.place_danger()
+        self.player_alive()
         if self.alive: 
-            self.player_alive()
             self.place_player()
         self.display_board()
         if not self.alive:
-            return 'D'
+            status = 'D'
         elif self.player_at_finish():
-            return 'F'
+            status = 'F'
         else:
-            return 'A'       
+            status = 'A'       
+        return {'status' : status, 'position' : [self.position_x,
+            self.position_y]}
 
     def create_board(self):
         '''
@@ -166,7 +167,7 @@ class Game(global_param.Global):
         if self.position_x < 0 or self.position_x > self.height-1 or self.position_y < 0 or self.position_y > self.width-1:
             self.alive = False
             return False
-        # If on a dangel field
+        # If on a danger field
         elif self.board[self.position_x, self.position_y] == self.danger_val:
             self.alive = False
             return False

@@ -17,8 +17,8 @@ class Global:
     new_board = False
 
     # Global board parameters
-    width                  = 5                 # Board with
-    height                 = 5                 # Board height
+    width                  = 6                 # Board with
+    height                 = 6                 # Board height
     danger_number          = 5                 # number of danger tiles
     start_x, start_y       = 0,0               # Entrance of maze
     position_x, position_y = start_x, start_y  # Player starting position
