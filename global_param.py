@@ -4,21 +4,22 @@ Global params
 --------------
 author        : T de Klijn
 created       : 2018-08-07
-last modified : 2018-08-07
+last modified : 2018-08-08
 ##########################
 '''
 
 class Global:
     '''
-    * Store global variables for the Game class
+    Store global variables for the Game class
+    This can also be used by machine learning algorithms
     '''
 
     # Start with a new board?
-    new_board = False
+    new_board = True
 
     # Global board parameters
-    width                  = 6                 # Board with
-    height                 = 6                 # Board height
+    width                  = 5                 # Board with
+    height                 = 5                 # Board height
     danger_number          = 5                 # number of danger tiles
     start_x, start_y       = 0,0               # Entrance of maze
     position_x, position_y = start_x, start_y  # Player starting position

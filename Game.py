@@ -4,8 +4,15 @@ Frozen lake game
 ----------------
 author        : T de Klijn
 created       : 2018-08-06
-last modified : 2018-08-07
+last modified : 2018-08-08
 ##########################
+Classic frozen lake game. Genarate a 'board' with a start, finish and holes in
+the ice. This is done random and based on width, hight and numeber of dangers.
+The board can be displayed in the terminal. A move input for 'update_board' can
+be left (l), right (r), up (u) or down (d). The after every board_update, the
+class well return a status which is alive (A), dead (D) or finished (F). Other
+parameters such as player position (x or y) can be extracted from the class as
+well. 
 '''
 
 import numpy as np
@@ -13,13 +20,13 @@ import global_param
 
 class Game(global_param.Global):
     '''
-    !!!! Global parameters in global_param !!!!
+    !!!! Global parameters in global_param.py !!!!
 
     * Create a board with dangers (D) a start (S) and an exit (E)
         an existing board can also be loaded
     * let the player (P) begin at start and based on move inputs walk towards
         the finish (or not)
-    * returns based on the move taken alive (A), dead (D) or finished (F)
+    * returns the status of the playes as a string: alive (A), dead (D) or finished (F)
     '''
 
     def __init__(self):
@@ -27,8 +34,9 @@ class Game(global_param.Global):
         Initialze board class
         '''
        
-        # Initialize board
-        self.alive     = True
+        # A player will start the game being alive 'A'
+        self.alive = True
+
         # Create a new board with dangers placed
         if self.new_board:
             self._create_danger_list()
@@ -36,12 +44,14 @@ class Game(global_param.Global):
             self.place_start_finish()
             self.place_danger()
             self.save_board()
+
         # Load an existing board
         else:
             self.load_board()
+
         # Setup board
         self.place_player()
-        print('\n'+35*'#'+'\n')
+        print('\n'+10*'<'+'  START  ' + 10*'>' + '\n')
         self.display_board()
 
     def update_board(self, move: str) -> str:
@@ -64,8 +74,7 @@ class Game(global_param.Global):
             status = 'F'
         else:
             status = 'A'       
-        return {'status' : status, 'position' : [self.position_x,
-            self.position_y]}
+        return status
 
     def create_board(self):
         '''
@@ -197,5 +206,3 @@ class Game(global_param.Global):
         write board as a numpy array
         '''
         np.save('board.npy', self.board)
-
-
