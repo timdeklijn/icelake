@@ -9,7 +9,7 @@ the optimal path.
 The game can be found in Game.py, there is a class Game. The class can be
 initiated by:
 
-'``
+```
 from Game import Game
 game = Game ()
 ```
