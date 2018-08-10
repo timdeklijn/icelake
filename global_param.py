@@ -23,7 +23,8 @@ class Global:
     danger_number          = 7                 # number of danger tiles
     start_x, start_y       = 0,0               # Entrance of maze
     position_x, position_y = start_x, start_y  # Player starting position
-    finish_x, finish_y     = width-1, height-1 # Exit of maze
+
+    show_board = True
 
     # Display features
     player_icon = 'P'

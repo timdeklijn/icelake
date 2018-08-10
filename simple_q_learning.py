@@ -4,15 +4,18 @@ Q-learning using table
 ----------------------
 author        : T de Klijn
 created       : 2018-08-07
-last modified : 2018-08-09
+last modified : 2018-08-10
 ##########################
 Every action on a board is determined by values in the Q-table (with a certain
 distortion), the Q-table is being updated each step, taking into acount the
 current and previous steps. This way, the algorithm will have a tendency to
 prefer future rewards instead of direct rewards.
 
+
+The MetaLearning class will run Qlearning over and over on different boards
+with different sizes. It will collect data and write it to file.
+
 TODO: 
-    - Implement plotting / visualization
     - RIC (reset of initial conditions), set all Q-table values to the reward
       of the first state
     - Data collection (a lot)
@@ -20,11 +23,97 @@ TODO:
 
 from global_param import Global
 from Game import Game
+
+import pandas as pd
 import numpy as np
 import gc, os
 import csv
 
-class Q_learning(Global):
+class MetaLearning(Global):
+    '''
+    Meta learning class, will run Q_learning over and over to collect data,
+    which will be outputted to file for later analysis. 
+
+    One such meta run will run Q_learning n_runs times, per board size
+    board = {'width' : n, 'height' : n, 'dangers' : d}.
+    '''
+
+    def __init__(self):
+
+        # Run control
+        Global.show_board = False
+
+        # Number of succesful runs per board
+        self.n_runs = 10
+
+        # final data file
+        self.data_file = 'data/meta_data.csv'
+
+        # meta parameters:
+        n = list(range(3,6))
+        dangers = n 
+        # Dict with desired board options:
+        self.boards = []
+        for i, wh in enumerate(n):
+            self.boards.append({'width': wh, 'height' : wh, 'dangers' :
+                dangers[i]-1})
+
+    def meta_learn(self):
+        '''
+        Run Qlearn multiple times and collecting different parameters/variables
+        to later do statistics on. 
+        '''
+
+        # Containers
+        size, dangers, first_succes, n_fails, n_finish = [],[],[],[],[]
+
+        # Start looping over boards, every board has to succeed n_runs times.
+        for board in self.boards:
+
+            # Set global board parameters
+            Global.width = board['width']
+            Global.height = board['height']
+            Global.danger_number = board['dangers']
+
+            # Counter for number of succesfull runs, ensures every board has
+            # the same number of final succesfull runs
+            succes_runs = 0
+
+            # Perform q_learning runs untill the n_runs has been reached
+            # succesfuly
+            while succes_runs < self.n_runs:
+
+                # Start Qlearning
+                Global.new_board = True
+                q_learn = Qlearning()
+                q_learn.n_episodes = 100
+                q_learn.learn()
+
+                # Count when succesfull
+                if q_learn.final_status == 'F':
+                    succes_runs +=1
+
+                    size.append(board['width'])
+                    dangers.append(board['dangers'])
+                    first_succes.append(q_learn.first_succes)
+                    n_fails.append(q_learn.n_fail)
+                    n_finish.append(q_learn.n_finish)
+                    print(f'''{board['width']} - {board['dangers']} - {q_learn.first_succes} - {q_learn.n_fail} - {q_learn.n_finish}''') 
+                gc.collect()
+
+        # Data frame for saving
+        self.df = pd.DataFrame({'size' : size, 'n_dangers' : dangers,
+            'first_succes' : first_succes, 'n_fails' : n_fails, 'n_finish' :
+            n_finish})
+
+        # Final results
+        print(self.df.head())
+
+        # Output data to file
+        self.df.to_csv(self.data_file, sep=',')
+           
+
+class Qlearning(Global):
     '''
     Simple Q-learning:
 
@@ -80,6 +169,13 @@ class Q_learning(Global):
         # append False if player did not reach the finish
         self.survival_list = []
 
+        # will contain the final status of a q-learn run
+        self.final_status = ''
+
+        # Containers for meta learning
+        self.n_fail, self.n_finish = 0 , 0
+        self.first_succes = None
+
     def write_data(self):
         '''
         Output data collected during q_learning to a file for later analysis
@@ -121,7 +217,6 @@ class Q_learning(Global):
             
             # If a new board is generated, do this only the first game
             if Global.new_board == True and i == 1:
-                print('Locking board')
                 Global.new_board = False
 
             # Initialize a new game for each episode
@@ -181,12 +276,18 @@ class Q_learning(Global):
                 # new state -> old state
                 s = s1
 
-               # break out when dead
+               # break out when dead or finished, adjust counters
                 if status == 'D':
+                    self.n_fail +=1
                     self.survival_list.append(False)
+                    self.final_status = 'D'
                     break
                 if status == 'F':
+                    if self.first_succes == None:
+                        self.first_succes = i 
+                    self.n_finish += 1
                     self.survival_list.append(True)
+                    self.final_status = 'F'
                     if j < self.shortest_path: 
                         self.shortest_path = j
                         self.shortest_path_container = path_container
@@ -203,8 +304,10 @@ class Q_learning(Global):
 
 def main():
 
-    q_learn = Q_learning()
-    q_learn.learn()
+#    q_learn = Qlearning()
+#    q_learn.learn()
+    meta_learn = MetaLearning()
+    meta_learn.meta_learn()
 
 if __name__ == '__main__':
     main()

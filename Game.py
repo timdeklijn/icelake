@@ -17,8 +17,9 @@ well.
 
 import numpy as np
 import global_param
+from global_param import Global
 
-class Game(global_param.Global):
+class Game(Global):
     '''
     !!!! Global parameters in global_param.py !!!!
 
@@ -34,6 +35,9 @@ class Game(global_param.Global):
         Initialze board class
         '''
        
+        # initialize finish based on gloabel width and height
+        self.finish_x, self.finish_y = Global.width-1, Global.height-1 
+
         # A player will start the game being alive 'A'
         self.alive = True
 
@@ -51,8 +55,9 @@ class Game(global_param.Global):
 
         # Setup board
         self.place_player()
-        print('\n'+10*'<'+'  START  ' + 10*'>' + '\n')
-        self.display_board()
+        if self.show_board:
+            print('\n'+10*'<'+'  START  ' + 10*'>' + '\n')
+            self.display_board()
 
     def update_board(self, move: str) -> str:
         '''
@@ -67,7 +72,8 @@ class Game(global_param.Global):
         self.player_alive()
         if self.alive: 
             self.place_player()
-        self.display_board()
+        if self.show_board:
+            self.display_board()
         if not self.alive:
             status = 'D'
         elif self.player_at_finish():
