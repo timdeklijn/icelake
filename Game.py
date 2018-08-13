@@ -41,6 +41,8 @@ class Game(Global):
         # A player will start the game being alive 'A'
         self.alive = True
 
+        self.size = self.width * self.height
+
         # Create a new board with dangers placed
         if self.new_board:
             self._create_danger_list()
