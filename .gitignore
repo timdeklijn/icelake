@@ -5,3 +5,6 @@ data.*
 data/
 *.csv
 model.*
+*.egg-info
+dist/
+build/

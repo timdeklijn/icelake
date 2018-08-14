@@ -23,6 +23,7 @@ from keras.optimizers import SGD, Adam, RMSprop
 from keras.layers.advanced_activations import PReLU
 
 from game.Game import Game
+from game.global_param import *
 
 # possible actions for game and the amount of actions
 actions = ['u', 'd', 'l', 'r']
@@ -117,7 +118,7 @@ def qtrain(model, game, **opt):
     # Save wins and losses
     win_history = []
     # amount of free space on the board
-    n_free_cells = game.size - game.danger_number - 1 
+    n_free_cells = game.size - danger_number - 1 
     # If total reward < min reward, escape epoch
     min_reward = -0.5 * game.size
     # history window size.size
@@ -281,4 +282,4 @@ def run():
             weights_file='')
 
 if __name__ == '__main__':
-    main()
+    run()

@@ -4,9 +4,9 @@ Frozen lake game
 ----------------
 author        : T de Klijn
 created       : 2018-08-06
-last modified : 2018-08-08
+last modified : 2018-08-14
 ##########################
-Classic frozen lake game. Genarate a 'board' with a start, finish and holes in
+Classic ice lake game. Genarate a 'board' with a start, finish and holes in
 the ice. This is done random and based on width, hight and numeber of dangers.
 The board can be displayed in the terminal. A move input for 'update_board' can
 be left (l), right (r), up (u) or down (d). The after every board_update, the
@@ -17,9 +17,9 @@ well.
 
 import numpy as np
 # import global_param
-from game.global_param import Global
+from game.global_param import *
 
-class Game(Global):
+class Game(object):
     '''
     !!!! Global parameters in global_param.py !!!!
 
@@ -36,15 +36,18 @@ class Game(Global):
         '''
        
         # initialize finish based on gloabel width and height
-        self.finish_x, self.finish_y = Global.width-1, Global.height-1 
+        self.start_x, self.start_y = start_x, start_y
+        self.finish_x, self.finish_y = width-1, height-1 
+        self.position_x, self.position_y = position_x, position_y
 
         # A player will start the game being alive 'A'
         self.alive = True
-
-        self.size = self.width * self.height
+        
+        # ML algorithms need a 1D array length size
+        self.size = width * height
 
         # Create a new board with dangers placed
-        if self.new_board:
+        if new_board:
             self._create_danger_list()
             self.create_board()
             self.place_start_finish()
@@ -57,7 +60,7 @@ class Game(Global):
 
         # Setup board
         self.place_player()
-        if self.show_board:
+        if show_board:
             print('\n'+10*'<'+'  START  ' + 10*'>' + '\n')
             self.display_board()
 
@@ -74,7 +77,7 @@ class Game(Global):
         self.player_alive()
         if self.alive: 
             self.place_player()
-        if self.show_board:
+        if show_board:
             self.display_board()
         if not self.alive:
             status = 'D'
@@ -88,7 +91,7 @@ class Game(Global):
         '''
         returns a numpy zero array with width and height
         '''
-        self.board = np.ones((self.width,self.height), dtype = int)
+        self.board = np.ones((width,height), dtype = int)
 
     def _mkstr(self,icon : str) -> str:
         '''
@@ -107,16 +110,16 @@ class Game(Global):
         for row in self.board:
             s = '|' 
             for elem in row:
-                if elem == self.elem_val:
-                    s += self._mkstr(self.elem_icon) 
-                elif elem == self.danger_val:
-                    s += self._mkstr(self.danger_icon)
-                elif elem == self.start_val:
-                    s += self._mkstr(self.start_icon)
-                elif elem == self.finish_val:
-                    s += self._mkstr(self.finish_icon)
-                elif elem == self.player_val:
-                    s += self._mkstr(self.player_icon)
+                if elem == elem_val:
+                    s += self._mkstr(elem_icon) 
+                elif elem == danger_val:
+                    s += self._mkstr(danger_icon)
+                elif elem == start_val:
+                    s += self._mkstr(start_icon)
+                elif elem == finish_val:
+                    s += self._mkstr(finish_icon)
+                elif elem == player_val:
+                    s += self._mkstr(player_icon)
                 else:
                     raise Exception('Problem constructing board')
             brd.append(s)
@@ -128,8 +131,8 @@ class Game(Global):
         '''
         Place start and finish icons on the board
         '''
-        self.board[self.start_x, self.start_y]   = self.start_val
-        self.board[self.finish_x, self.finish_y] = self.finish_val
+        self.board[self.start_x, self.start_y]   = start_val
+        self.board[self.finish_x, self.finish_y] = finish_val
 
     def _create_danger_list(self):
         '''
@@ -139,9 +142,9 @@ class Game(Global):
         self.danger_list = []
         strt = [self.start_x, self.start_y]
         fnsh = [self.finish_x, self.finish_y]
-        while len(self.danger_list) < self.danger_number:
-                elem = [np.random.randint(self.width-1),
-                        np.random.randint(self.height-1)]
+        while len(self.danger_list) < danger_number:
+                elem = [np.random.randint(width-1),
+                        np.random.randint(height-1)]
                 if elem not in self.danger_list and elem != strt and elem != fnsh:
                     self.danger_list.append(elem)
                 else:
@@ -153,13 +156,13 @@ class Game(Global):
         Create the danger locations on the board
         ''' 
         for i in self.danger_list: 
-            self.board[i[0],i[1]] = self.danger_val
+            self.board[i[0],i[1]] = danger_val
 
     def place_player(self):
         '''
         Place player its loaction
         '''
-        self.board[self.position_x, self.position_y] = self.player_val
+        self.board[self.position_x, self.position_y] = player_val
 
     def update_player_position(self, move):
         '''
@@ -173,7 +176,7 @@ class Game(Global):
         else:
             raise Exception('Incorrect input for player movement')
         # reset old player position
-        self.board[old_x,old_y] = self.elem_val
+        self.board[old_x,old_y] = elem_val
         
     def player_alive(self) -> bool:
         '''
@@ -181,11 +184,11 @@ class Game(Global):
         is equal to a danger position or outside of board
         '''
         # If out of bounds
-        if self.position_x < 0 or self.position_x > self.height-1 or self.position_y < 0 or self.position_y > self.width-1:
+        if self.position_x < 0 or self.position_x > height-1 or self.position_y < 0 or self.position_y > width-1:
             self.alive = False
             return False
         # If on a danger field
-        elif self.board[self.position_x, self.position_y] == self.danger_val:
+        elif self.board[self.position_x, self.position_y] == danger_val:
             self.alive = False
             return False
         else:
@@ -205,7 +208,7 @@ class Game(Global):
         Load board from numpy array and exctract danger_list
         '''
         self.board = np.load('board.npy')
-        tmp =  np.where(self.board == self.danger_val)
+        tmp =  np.where(self.board == danger_val)
         self.danger_list = np.array(list(map(lambda x,y: [x,y], tmp[0],
             tmp[1])))
 

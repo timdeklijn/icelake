@@ -16,7 +16,7 @@ TODO:
       of the first state
 '''
 
-from game.global_param import Global
+from game.global_param import *
 from game.Game import Game
 
 import pandas as pd
@@ -24,7 +24,7 @@ import numpy as np
 import gc, os
 import csv
 
-class Qlearn(Global):
+class Qlearn():
     '''
     Simple Q-learning:
 
@@ -50,13 +50,13 @@ class Qlearn(Global):
 
         # Initialize q-table - (length = number of states (positions), width =
         # number of options
-        self.q_table = np.zeros((self.width*self.height,4))
+        self.q_table = np.zeros((width*height,4))
 
     def _convert_pos(self, p):
         '''
         Convert position [x,y] to index (1d)
         '''
-        return (p[0] * self.width) + p[1]
+        return (p[0] * width) + p[1]
 
     def learn(self):
         '''
@@ -70,10 +70,6 @@ class Qlearn(Global):
         episode_reward = 0
         for i in range(self.n_episodes):
             
-            # If a new board is generated, do this only the first game
-            if Global.new_board == True and i == 1:
-                Global.new_board = False
-
             # Initialize a new game for each episode
             game = Game()                    
 
@@ -146,4 +142,4 @@ def run():
     learn.learn()
 
 if __name__ == '__main__':
-    main()
+    run()
