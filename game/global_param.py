@@ -20,7 +20,7 @@ danger_number          = 4                 # number of danger tiles
 start_x, start_y       = 0,0               # Entrance of maze
 position_x, position_y = start_x, start_y  # Player starting position
 
-show_board = True
+show_board = False
 
 # Display features
 player_icon = 'P'
