@@ -1,2 +1,4 @@
 python 3.6.6
 numpy 1.15.0
+kera
+tensorflow

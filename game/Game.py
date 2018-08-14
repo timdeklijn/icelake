@@ -16,8 +16,8 @@ well.
 '''
 
 import numpy as np
-import global_param
-from global_param import Global
+# import global_param
+from game.global_param import Global
 
 class Game(Global):
     '''
