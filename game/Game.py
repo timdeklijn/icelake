@@ -77,7 +77,7 @@ class Game(object):
         self.player_alive()
         if self.alive: 
             self.place_player()
-        if show_board:
+        if show_board and self.alive:
             self.display_board()
         if not self.alive:
             status = 'D'
@@ -176,7 +176,8 @@ class Game(object):
         else:
             raise Exception('Incorrect input for player movement')
         # reset old player position
-        self.board[old_x,old_y] = elem_val
+        if 0 <= old_x < width and 0 <= old_y < height:
+            self.board[old_x,old_y] = elem_val
         
     def player_alive(self) -> bool:
         '''
@@ -184,7 +185,8 @@ class Game(object):
         is equal to a danger position or outside of board
         '''
         # If out of bounds
-        if self.position_x < 0 or self.position_x > height-1 or self.position_y < 0 or self.position_y > width-1:
+        if not 0 <= self.position_x < width or not 0 <= self.position_y < height:
+        #if self.position_x < 0 or self.position_x > height-1 or self.position_y < 0 or self.position_y > width-1:
             self.alive = False
             return False
         # If on a danger field

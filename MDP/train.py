@@ -4,7 +4,7 @@ Markov decision process
 -----------------------
 author        : T de Klijn
 created       : 2018-08-13
-last modified : 2018-08-14
+last modified : 2018-08-15
 ##########################
 Implementation of MDP using keras
 
@@ -14,6 +14,8 @@ adapted from:
 http://www.samyzaf.com/ML/rl/qmaze.html
 https://keras.io/models/sequential/
 '''
+from game.global_param import *
+from game.Game import Game
 
 import numpy as np
 import os, sys, time, datetime, json, random
@@ -22,14 +24,11 @@ from keras.layers.core import Dense, Activation
 from keras.optimizers import SGD, Adam, RMSprop
 from keras.layers.advanced_activations import PReLU
 
-from game.Game import Game
-from game.global_param import *
-
 # possible actions for game and the amount of actions
 actions = ['u', 'd', 'l', 'r']
 num_actions = len(actions)
 # Eagerness to learn
-epsilon = 0.9
+epsilon = 0.5
 
 class Experience(object):
     '''
@@ -105,9 +104,9 @@ def qtrain(model, game, **opt):
     start_time = datetime.datetime.now()
     
     # Prep epsilon update - become less exploratory over time
-    d_epsilon = n_epoch / 10
-    update_epsilon_list = [i*d_epsilon for i in range(10)][1:]
- 
+    win_rate_epsilon_list = [0.2, 0.4, 0.6, 0.8, 0.9]
+    epsilon_list = [0.4, 0.3, 0.2 ,0.1 ,0.05]
+
     # Load weights from previous session
     if weights_file:
         print('Loading weights from file %s'.format(weights_file))
@@ -136,6 +135,7 @@ def qtrain(model, game, **opt):
         tot_reward = 0.0
         # Sve trajectory to penalize backtracking
         trajectory = []
+        game = Game()
         # Play the game
         while not game_over:
             # Get possible actions
@@ -143,7 +143,7 @@ def qtrain(model, game, **opt):
             # Set new state to old
             prev_envstate = envstate
             # Determin action epsilon determines how curious the player is
-            if np.random.rand() > epsilon:
+            if np.random.rand() < epsilon:
                 action = random.choice([i for i in range(num_actions)])
             else:
                 # get action from model
@@ -165,11 +165,9 @@ def qtrain(model, game, **opt):
             # Check if episode is over
             if game_status == 'F':
                 win_history.append(1)
-                game = Game()
                 game_over = True
             elif game_status == 'D' or tot_reward < min_reward:
                 win_history.append(0)
-                game = Game()
                 game_over = True
             else:
                 game_over = False
@@ -179,12 +177,12 @@ def qtrain(model, game, **opt):
             n_episodes += 1
             # Modify state/reward info to train the model
             inputs, targets = experience.get_data(data_size = data_size)
-            # Trein the model
+            # Train the model
             h = model.fit(
                     inputs,
                     targets,
                     epochs=8,
-                    batch_size=16,
+                    batch_size=32,
                     verbose=0,
                     )
             # Evaluate model
@@ -197,9 +195,13 @@ def qtrain(model, game, **opt):
             start_time).total_seconds())
         template = 'Epoch: {:4d}/{:4d} | Loss: {:.4f} | Epsodes: {:3d} | Win count: {:4d} | Win rate: {:.3f} | time: {}'
         print(template.format(epoch, n_epoch-1, loss, n_episodes, sum(win_history), win_rate, t))
-        # Update epsilon at intervals - make less curious over time
-        if epoch in update_epsilon_list:
-            epsilon *= 1.02
+        # Update epsilon at based on win_rate, become less curious whith more
+        # wins.
+        if win_rate >= win_rate_epsilon_list[0]:
+            epsilon = epsilon_list[0]
+            win_rate_epsilon_list.pop(0)
+            epsilon_list.pop(0)
+            print(f'Setting new epsilon: {epsilon}')
         # If win_rate is high enough stop training
         if sum(win_history[-hsize:]) == hsize: 
             print('Reached 100%% win rate at epoch {:d}'.format(epoch))
@@ -278,7 +280,7 @@ def run():
     # Build model
     model = build_model(game)
     # Train model
-    qtrain(model, game, epochs=15000, max_memory=8*game.size, data_size=32,
+    qtrain(model, game, epochs=15000, max_memory=8*game.size, data_size=64,
             weights_file='')
 
 if __name__ == '__main__':

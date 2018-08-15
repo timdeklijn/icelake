@@ -4,7 +4,7 @@ Show MDP
 --------
 author        : T de Klijn
 created       : 2018-08-13
-last modified : 2018-08-14
+last modified : 2018-08-15
 ##########################
 Load the nearal network model created in train, run through game once, save
 everything to be displayed later
@@ -12,7 +12,6 @@ everything to be displayed later
 import numpy as np
 
 from game.Game import Game
-from game.global_param import *
 from MDP.train import build_model, observe_board, Experience
 
 def run():
@@ -22,7 +21,6 @@ def run():
     '''
     # Needed for coupling to Experience class
     max_memory = 1000
-
     # possible actions for game and the amount of actions
     actions = ['u', 'd', 'l', 'r']
     num_actions = len(actions)
@@ -67,15 +65,18 @@ def run():
         else:
             game_over = False
     # Trajectory converted to string
-    traj = coord_to_string(trajectory)
+    traj = '00' + coord_to_string(trajectory)
     # Danger coordinates converted to string
     tmp = np.where(game.board == -10)
     dng = coord_to_string(list(zip(list(tmp[0]),list(tmp[1]))))
-    print(traj,dng)
+    print(traj,'\n',dng)
 
 def coord_to_string(crd) -> str:
-
+    '''
+    Convert a list of coordinates to a string with numbers
+    '''
     s = ''
+    # Iterate over list of coordinates
     for r in crd:
         for c in r:
             s+=str(c)
